@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 import {
-    Container,
     Flex,
     Heading,
     InputGroup,
@@ -10,27 +9,31 @@ import {
     Text,
     IconButton,
     Divider,
-    Link,
-} from "@chakra-ui/react";
-import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
+} from "@chakra-ui/react"
+import { AddIcon, DeleteIcon, StarIcon } from "@chakra-ui/icons"
 import {
     useAuthUser,
     withAuthUser,
     withAuthUserTokenSSR,
     AuthAction,
-} from 'next-firebase-auth';
-import firebase from 'firebase/app';
-import 'firebase/firestore';
-import Header from '../components/Header';
-import Layout from '../components/Layout';
+} from 'next-firebase-auth'
+import getAbsoluteURL from '../utils/getAbsoluteURL'
+import firebase from 'firebase/app'
+import 'firebase/firestore'
+import Link from 'next/link'
 
+
+
+//Event holds state hook and effect hook. State - useState, Effect - useEffect
 const Event = () => {
-  const AuthUser = useAuthUser();
-  const [inputName, setInputName] = useState('');
-  const [inputDate, setInputDate] = useState('');
-  const [inputDessert, setInputDessert] = useState('');
-  const [events, setEvents] = useState([]);
+  const AuthUser = useAuthUser()
+  //set hook properties? variable? to empty to start
+  const [inputName, setInputName] = useState('')
+  const [inputDate, setInputDate] = useState('')
+  const [inputDessert, setInputDessert] = useState('')
 
+  const [events, setEvents] = useState([])
+//Effect hook
   useEffect(() => {
     AuthUser.id &&
       firebase
@@ -47,8 +50,6 @@ const Event = () => {
                     eventName: doc.data().name,
                     eventDate: doc.data().date.toDate().toDateString(),
                     eventDessert: doc.data().dessert
-
-
                   }
                 }
               )
@@ -65,51 +66,54 @@ const Event = () => {
         .collection("events") // all users will share one collection
         .add({
           name: inputName,
+          dessert: inputDessert,
           date: firebase.firestore.Timestamp.fromDate( new Date(inputDate) ),
           timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-          dessert: inputDessert,
           user: AuthUser.id
         })
         .then(console.log('Data was successfully sent to cloud firestore!'));
-      // flush out the user-entered values in the input elements onscreen
+      // reset onscreen user fields to prompts
       setInputName('');
       setInputDate('');
       setInputDessert('');
 
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
   }
 
-  const deleteEvent = (t) => {
+  const deleteTodo = (t) => {
     try {
       firebase
         .firestore()
         .collection("events")
         .doc(t)
         .delete()
-        .then(console.log('Data was successfully deleted!'));
+        .then(console.log('Data was successfully deleted!'))
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
-  };
+  }
+//React component - display of changing data
+    return (
+      <Flex flexDir="column" maxW={800} align="center" justify="center" minH="100vh" m="auto" px={4}>
+        <Flex justify="space-between" w="100%" align="center">
+          <Heading mb={4}>Welcome, {AuthUser.email}!</Heading>
+          <Flex>
+            
+            <IconButton ml={2} onClick={AuthUser.signOut} icon={<StarIcon />} />
+          </Flex>
+        </Flex>
 
-  return (
-    <>
-      <Header 
-        email={AuthUser.email} 
-        signOut={AuthUser.signOut} />
-      <Flex flexDir="column" maxW={800} align="left" justify="start" minH="100vh" m="auto" px={2} py={6}>
-      <Heading size="xl">New Event</Heading>
-      <Flex flexDir="column" maxW={800} align="left" justify="start" minH="100vh" m="auto" px={20} py={6}>
         <InputGroup>
           <InputLeftElement
             pointerEvents="none"
-            children=""
+            children={<AddIcon color="gray.300" />}
           />
-          <Input type="text" value={inputName} onChange={(e) => setInputName(e.target.value)} placeholder=" Title" />
+          <Input type="text" value={inputName} onChange={(e) => setInputName(e.target.value)} placeholder="Event Title" />
           <Input type="date" value={inputDate} onChange={(e) => setInputDate(e.target.value)} placeholder="Event Date" />
-          <Input type="text" value={inputDessert} onChange={(e) => setInputDessert(e.target.value)} placeholder=" Dessert" />
+          <Input type="text" value={inputDessert} onChange={(e) => setInputDessert(e.target.value)} placeholder="Favorite Dessert" />
+
           <Button
             ml={2}
             onClick={() => sendData()}
@@ -117,7 +121,7 @@ const Event = () => {
             Add
           </Button>
         </InputGroup>
-
+      
         {events.map((item, i) => {
           return (
             <React.Fragment key={i}>
@@ -131,25 +135,19 @@ const Event = () => {
                 justifyContent="space-between"
               >
                 <Flex align="center">
+                
                   <Text fontSize="xl" mr={4}>{i + 1}.</Text>
-                  <Text>
-                    <Link href={'/events/' + item.eventID}>
-                    {item.eventName}
-                    </Link>
-                  </Text>
+                  <Text><Link key= {item.eventID} href={`events/${item.eventID}`}><a className="list-group-item list-group-item-action">{item.eventName}</a></Link></Text>
                   <Text>... {item.eventDate}</Text>
-                  <Text>... {item.eventDessert}</Text>
-
+                  <Text>...{item.eventDessert}</Text>
                 </Flex>
                 <IconButton onClick={() => deleteEvent(item.eventID)} icon={<DeleteIcon />} />
               </Flex>
             </React.Fragment>
           )
         })}
-        </Flex>
       </Flex>
-    </>
-  )
+    )
 }
 
 export const getServerSideProps = withAuthUserTokenSSR({
@@ -165,3 +163,13 @@ export default withAuthUser({
   whenUnauthedAfterInit: AuthAction.REDIRECT_TO_LOGIN,
   whenUnauthedBeforeInit: AuthAction.REDIRECT_TO_LOGIN,
 })(Event)
+
+
+          
+          
+ 
+
+
+          
+
+

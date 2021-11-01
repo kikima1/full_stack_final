@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 import {
     Flex,
     Heading,
@@ -9,31 +9,37 @@ import {
     Text,
     IconButton,
     Divider,
-    Link,
-} from "@chakra-ui/react";
-import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
+} from "@chakra-ui/react"
+import { AddIcon, DeleteIcon, StarIcon } from "@chakra-ui/icons"
+import DarkModeSwitch from '../components/DarkModeSwitch'
 import {
     useAuthUser,
     withAuthUser,
     withAuthUserTokenSSR,
     AuthAction,
-} from 'next-firebase-auth';
-import firebase from 'firebase/app';
-import 'firebase/firestore';
-import Header from '../components/Header';
-import Layout from '../components/Layout';
+} from 'next-firebase-auth'
+import getAbsoluteURL from '../utils/getAbsoluteURL'
+import firebase from 'firebase/app'
+import 'firebase/firestore'
+import Link from 'next/link'
 
+
+
+//Event holds state hook and effect hook. State - useState, Effect - useEffect
 const Todo = () => {
-  const AuthUser = useAuthUser();
-  const [inputTodo, setInputTodo] = useState('');
-  const [todos, setTodos] = useState([]);
-
+  const AuthUser = useAuthUser()
+  //set hook properties? variable? to empty to start
+  const [inputTodo, setInputTodo] = useState('')
+  //const [inputTime, setTime]= useState('')
+  const [todos, setTodos] = useState([])
+//Effect hook
   useEffect(() => {
     AuthUser.id &&
       firebase
         .firestore()
         .collection("todos")
         .where( 'user', '==', AuthUser.id )
+        //.orderBy('timestamp', 'desc')//may need to take out
         .onSnapshot(
           snapshot => {
             setTodos(
@@ -42,10 +48,8 @@ const Todo = () => {
                   return {
                     todoID: doc.id,
                     todo: doc.data().todo
-                    //timestamp: doc.data().date.toDate().toDateString()
+                    //timestamp: doc.data().date.toDate().toDateString(),
                     
-
-
                   }
                 }
               )
@@ -61,17 +65,17 @@ const Todo = () => {
         .firestore()
         .collection("todos") // all users will share one collection
         .add({
-          todo: inputTodo,
+          todo: todo,
           timestamp: firebase.firestore.FieldValue.serverTimestamp(),
           user: AuthUser.id
         })
         .then(console.log('Data was successfully sent to cloud firestore!'));
-      // flush out the user-entered values in the input elements onscreen
+      // reset onscreen user fields to prompts
       setInputTodo('');
       
 
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
   }
 
@@ -82,37 +86,39 @@ const Todo = () => {
         .collection("todos")
         .doc(t)
         .delete()
-        .then(console.log('Data was successfully deleted!'));
+        .then(console.log('Data was successfully deleted!'))
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
-  };
+  }
+//React component - display of changing data
+    return (
+      <Flex flexDir="column" maxW={800} align="center" justify="center" minH="100vh" m="auto" px={4}>
+        <Flex justify="space-between" w="100%" align="center">
+          <Heading mb={4}>Welcome, {AuthUser.email}!</Heading>
+          <Flex>
+            <DarkModeSwitch />
+            <IconButton ml={2} onClick={AuthUser.signOut} icon={<StarIcon />} />
+          </Flex>
+        </Flex>
 
- return (
-    <>
-      <Header 
-        email={AuthUser.email} 
-        signOut={AuthUser.signOut} />
-      <Flex flexDir="column" maxW={800} align="left" justify="start" minH="100vh" m={4} px={4} py={6}>
-      <Heading size="xl">New To Do</Heading>
-      <Flex flexDir="column" minW={200} align="left" justify="start" minH="100vh" m="auto" px={4} py={6}>
-  
         <InputGroup>
           <InputLeftElement
             pointerEvents="none"
-            children=""
+            children={<AddIcon color="gray.300" />}
           />
-          
-          <Input type="text" value={inputTodo} onChange={(e) => setInputTodo(e.target.value)} placeholder="Let's get busy!" />
          
-          <Button 
-            ml={10}
+          <Input type="text" value={inputTodo} onChange={(e) => setInputTodo(e.target.value)} placeholder="Todo" />
+          
+
+          <Button
+            ml={2}
             onClick={() => sendData()}
           >
-            Add To Do
+            Add Todo
           </Button>
         </InputGroup>
-
+      
         {todos.map((t, i) => {
           return (
             <React.Fragment key={i}>
@@ -126,24 +132,17 @@ const Todo = () => {
                 justifyContent="space-between"
               >
                 <Flex align="center">
+                
                   <Text fontSize="xl" mr={4}>{i + 1}.</Text>
-                  <Text>
-                    <Link href={'/todos/' + t.todoID}>
-                    {t.todo}
-                    </Link>
-                  </Text>
-                  
-
-                </Flex>
+                  <Text><Link key= {t.todoID} href={`todos/${t.todoID}`}><a className="list-group-item list-group-item-action">{t.todo}</a></Link></Text>
+                  </Flex>
                 <IconButton onClick={() => deleteTodo(t.todoID)} icon={<DeleteIcon />} />
               </Flex>
             </React.Fragment>
           )
         })}
-      </Flex>  
       </Flex>
-    </>
-  )
+    )
 }
 
 export const getServerSideProps = withAuthUserTokenSSR({
@@ -159,3 +158,24 @@ export default withAuthUser({
   whenUnauthedAfterInit: AuthAction.REDIRECT_TO_LOGIN,
   whenUnauthedBeforeInit: AuthAction.REDIRECT_TO_LOGIN,
 })(Todo)
+
+/* <div className="list-group">
+          {allData ?
+            allData.map(({ id, name }) => (
+            <Link key={id} href={`/${id}`}>
+              <a className="list-group-item list-group-item-action">{name}</a>
+            </Link>
+          ))
+          :null}
+          
+          
+         <Text><Link key= {id} href={`/${id}`}><a className="list-group-item list-group-item-action">{item.eventName}</a></Link></Text> 
+          
+          
+          <Text>{t.todo}</Text></Flex>
+          */
+
+
+          
+
+
