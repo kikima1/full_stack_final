@@ -109,7 +109,7 @@ const Todo = () => {
             ml={10}
             onClick={() => sendData()}
           >
-            Add To Do
+            Add
           </Button>
         </InputGroup>
 

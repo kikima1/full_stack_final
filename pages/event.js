@@ -101,7 +101,7 @@ const Event = () => {
         signOut={AuthUser.signOut} />
       <Flex flexDir="column" maxW={800} align="left" justify="start" minH="100vh" m="auto" px={2} py={6}>
       <Heading size="xl">New Event</Heading>
-      <Flex flexDir="column" maxW={800} align="left" justify="start" minH="100vh" m="auto" px={20} py={6}>
+      <Flex flexDir="column" maxW={800} align="left" justify="start" minH="100vh" m="auto" px={10} py={6}>
         <InputGroup>
           <InputLeftElement
             pointerEvents="none"
