@@ -17,7 +17,7 @@ import {
     Divider,
     Link,
   } from '@chakra-ui/react';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; 
 import { AddIcon } from "@chakra-ui/icons";
 import Header from '../../components/Header';
 import { useAuthUser, withAuthUser, withAuthUserTokenSSR, AuthAction } from 'next-firebase-auth';
