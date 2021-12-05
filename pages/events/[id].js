@@ -67,6 +67,7 @@ const SingleEvent = ({itemData}) => {
           <Input type="text" value={inputDessert} onChange={(e) => setInputDessert(e.target.value)} placeholder="Favorite Dessert" />
           <Button
             ml={2}
+            px={30}
             onClick={() => sendData()}
           >
             Update
